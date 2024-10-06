@@ -1,20 +1,22 @@
-import { nowInSec, SkyWayAuthToken, SkyWayContext, SkyWayRoom, uuidV4, LocalAudioStream } from '@skyway-sdk/room'
+import type { RoomPublication } from '@skyway-sdk/room';
 
 export async function useConnectSkyway(gamerTag: string) {
-  if (!import.meta.env.SSR) {
+  if (typeof window !== 'undefined' && !import.meta.env.SSR) {
     const {
       nowInSec,
       SkyWayAuthToken,
       SkyWayContext,
       SkyWayRoom,
       uuidV4,
-      LocalAudioStream
+      LocalAudioStream,
+      RemoteAudioStream
     } = await import('@skyway-sdk/room');
 
     const {
       media,
       micNode,
-      micDest
+      micDest,
+      userList
     } = useComponents();
 
     const config = useRuntimeConfig();
@@ -69,7 +71,7 @@ export async function useConnectSkyway(gamerTag: string) {
     const context = await SkyWayContext.Create(token);
     const room = await SkyWayRoom.FindOrCreate(context, {
       type: 'sfu',
-      name: 'test',
+      name: 'Syakasaba3',
     });
 
     const me = await room.join({ name: gamerTag });
@@ -83,5 +85,37 @@ export async function useConnectSkyway(gamerTag: string) {
       });
     }
 
+    const subscribeAttach = async (publication: RoomPublication) => {
+      const audioContext = new AudioContext();
+
+      const publisher = publication.publisher;
+      const pubName = publisher.name!;
+
+      if(publisher.id === me.id) return;
+
+      const { stream, subscription } = await me.subscribe(publication.id);
+
+      if(!(stream instanceof RemoteAudioStream)) return;
+
+      const newStream = new MediaStream([stream.track])
+      const source = audioContext.createMediaStreamSource(newStream);
+      const gainNode = audioContext.createGain();
+
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      gainNode.gain.value = 2;
+
+      userList.value.push({
+        name: pubName,
+        gain: gainNode
+      })
+
+      console.log('subscribe at ' + pubName);
+    }
+    
+    console.log(room.publications)
+    room.publications.forEach(subscribeAttach);
+    room.onStreamPublished.add(async (e) => subscribeAttach(e.publication));
   }
 }
