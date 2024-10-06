@@ -6,15 +6,15 @@ const joinLoad = ref<boolean>(false);
 
 const {
   gamerTag,
-  phoneSlider,
-  micSlider
+  phoneLevel,
+  micLevel
 } = useComponents();
 
 const joinClick = async () => {
   joinLoad.value = true;
 
   await useConnectSocket();
-  const skywayRoom = useConnectSkyway(gamerTag.value);
+  useConnectSkyway(gamerTag.value);
 
   joinLoad.value = false;
   joining.value = !joining.value;

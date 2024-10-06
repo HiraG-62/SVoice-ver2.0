@@ -2,7 +2,7 @@ import type { RefSymbol } from "@vue/reactivity";
 
 const createMicNode = () => {
   const {
-    micSlider,
+    micLevel,
     media,
     micContext,
     micNode,
@@ -13,7 +13,7 @@ const createMicNode = () => {
   micNode.value = micContext.value!.createGain();
   micDest.value = micContext.value!.createMediaStreamDestination();
 
-  micNode.value.gain.value = micSlider.value / 50;
+  micNode.value.gain.value = micLevel.value / 50;
 
   microphone.connect(micNode.value);
   micNode.value.connect(micDest.value);
@@ -22,7 +22,7 @@ const createMicNode = () => {
 export async function useAudio() {
 
   const {
-    micSlider,
+    micLevel,
     media,
     micContext,
     micNode
@@ -45,7 +45,7 @@ export async function useAudio() {
     console.error('mic connection error: ', err);
   }
 
-  watch(micSlider, (newVolume) => {
+  watch(micLevel, (newVolume) => {
     if (micNode.value) {
       micNode.value.gain.value = newVolume / 50;
     }
@@ -55,7 +55,7 @@ export async function useAudio() {
 export function useMicIndicator() {
 
   const {
-    micSlider,
+    micLevel,
     micIndicator,
     isMicTest,
     selectedInput,
@@ -168,7 +168,7 @@ export async function useAudioDevice() {
 
 export async function useChangeMicMedia() {
   const {
-    micSlider,
+    micLevel,
     selectedInput,
     media,
     micContext,

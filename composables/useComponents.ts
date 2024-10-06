@@ -3,7 +3,7 @@ export function useComponents() {
   const themeColorLight = (num: number) => useState<string>('themeColorLight', () => `${themeColor.value}-lighten-${num}`);
   const themeColorDark = (num: number) => useState<string>('themeColorDark', () => `${themeColor.value}-darken-${num}`);
 
-  const gamerTag = useState<string>('gamerTag', () => 'test');
+  const gamerTag = useState<string>('gamerTag', () => Math.round(Math.random() * 1000).toString());
 
   const micIndicator = useState<number>('micIndicator', () => 0);
   const micIndicatorMax = ref<number>(50);
@@ -14,16 +14,16 @@ export function useComponents() {
   const isExtendsMic = ref<boolean>(false);
   const isJoining = useState<boolean>('isJoining', () => false)
 
-  const phoneSlider = useState<number>('phoneSlider', () => 100);
+  const phoneLevel = useState<number>('phoneLevel', () => 100);
   const phoneMax = ref<number>(200);
   const phoneMin = ref<number>(0);
 
-  const micSlider = useState<number>('micSlider', () => 100);
+  const micLevel = useState<number>('micLevel', () => 100);
   const micMax = ref<number>(200);
   const micMin = ref<number>(0);
 
   const micIndicatorColor = computed(() => sliderLevel(micIndicator.value, micIndicatorMax.value));
-  const micLevelColor = computed(() => sliderLevel(micSlider.value, micMax.value));
+  const micLevelColor = computed(() => sliderLevel(micLevel.value, micMax.value));
 
   const audioInputs = useState<MediaDeviceInfo[]>('audioInputs', () => []);
   const audioOutputs = useState<MediaDeviceInfo[]>('audioOutputs', () => []);
@@ -35,6 +35,8 @@ export function useComponents() {
   const micContext = useState<AudioContext | null>('micContext', () => null);
   const micNode = useState<GainNode | null>('micNode', () => null);
   const micDest = useState<MediaStreamAudioDestinationNode | null>('micDest', () => null);
+
+  const userList = useState<UserInfo[]>('userList', () => []);
 
   function sliderLevel(value: number, max: number) {
     if (value == 0) return 'grey'
@@ -57,10 +59,10 @@ export function useComponents() {
     isSelfMute,
     isExtendsMic,
     isJoining,
-    phoneSlider,
+    phoneLevel,
     phoneMax,
     phoneMin,
-    micSlider,
+    micLevel,
     micMax,
     micMin,
     micIndicatorColor,
@@ -72,6 +74,7 @@ export function useComponents() {
     media,
     micContext,
     micNode,
-    micDest
+    micDest,
+    userList
   }
 }

@@ -9,10 +9,10 @@ const {
   micIndicatorMin,
   isMicTest,
   isExtendsMic,
-  phoneSlider,
+  phoneLevel,
   phoneMax,
   phoneMin,
-  micSlider,
+  micLevel,
   micMax,
   micMin,
   micIndicatorColor,
@@ -26,17 +26,17 @@ const {
 const { startListening, stopListening } = useMicIndicator();
 
 const changePhoneVolume = () => {
-  if (phoneSlider.value > phoneMax.value) {
-    phoneSlider.value = phoneMax.value;
-  } else if (phoneSlider.value < phoneMin.value) {
-    phoneSlider.value = phoneMin.value;
+  if (phoneLevel.value > phoneMax.value) {
+    phoneLevel.value = phoneMax.value;
+  } else if (phoneLevel.value < phoneMin.value) {
+    phoneLevel.value = phoneMin.value;
   }
 }
 const changeMicVolume = () => {
-  if (micSlider.value > micMax.value) {
-    micSlider.value = micMax.value;
-  } else if (micSlider.value < micMin.value) {
-    micSlider.value = micMin.value;
+  if (micLevel.value > micMax.value) {
+    micLevel.value = micMax.value;
+  } else if (micLevel.value < micMin.value) {
+    micLevel.value = micMin.value;
   }
 
 }
@@ -48,8 +48,8 @@ const clickExtendsMic = () => {
     micMax.value = 2000;
   } else {
     micMax.value = 200;
-    if (micSlider.value > 200) {
-      micSlider.value = 200;
+    if (micLevel.value > 200) {
+      micLevel.value = 200;
     }
   }
 }
@@ -79,10 +79,10 @@ watch(selectedInput, async () => {
         </v-list-item>
         <v-list-item>
           <v-list-item-subtitle>入力音量</v-list-item-subtitle>
-          <v-slider v-model="micSlider" :color="themeColorLight(2).value" :min="micMin" :max="micMax" :step="0.1"
+          <v-slider v-model="micLevel" :color="themeColorLight(2).value" :min="micMin" :max="micMax" :step="0.1"
             style="padding-left: 15px;">
             <template #append>
-              <v-text-field @input="changeMicVolume" v-model="micSlider" density="compact" style="width: 100px"
+              <v-text-field @input="changeMicVolume" v-model="micLevel" density="compact" style="width: 100px"
                 type="number" hide-details single-line></v-text-field>
             </template>
           </v-slider>
@@ -101,10 +101,10 @@ watch(selectedInput, async () => {
         </v-list-item>
         <v-list-item>
           <v-list-item-subtitle>出力音量</v-list-item-subtitle>
-          <v-slider v-model="phoneSlider" :color="themeColorLight(2).value" :min="phoneMin" :max="phoneMax" :step="0.1"
+          <v-slider v-model="phoneLevel" :color="themeColorLight(2).value" :min="phoneMin" :max="phoneMax" :step="0.1"
             style="padding-left: 15px;">
             <template #append>
-              <v-text-field @input="changePhoneVolume" v-model="phoneSlider" density="compact" style="width: 100px"
+              <v-text-field @input="changePhoneVolume" v-model="phoneLevel" density="compact" style="width: 100px"
                 type="number" hide-details single-line></v-text-field>
             </template>
           </v-slider>
