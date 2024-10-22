@@ -5,8 +5,15 @@ const {
   themeColorDark
 } = useComponents();
 
+const { stopListening } = useMicIndicator();
+
 const setting = ref<boolean>(false);
 const settingTabs = ref(1);
+
+const closeSetting = () => {
+  stopListening();
+  setting.value = false;
+}
 
 const open = () => {
   setting.value = true;
@@ -22,7 +29,7 @@ defineExpose({
   <v-dialog v-model="setting" fullscreen hide-overlay transition="dialog-bottom-transition">
     <v-card>
       <v-toolbar dark :color="themeColor">
-        <v-btn icon dark @click="setting = false">
+        <v-btn icon dark @click="closeSetting">
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <v-toolbar-title>設定</v-toolbar-title>

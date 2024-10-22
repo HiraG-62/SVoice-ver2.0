@@ -1,4 +1,5 @@
 interface UserInfo {
-  name: string;
-  gain: GainNode;
+  gamerTag: string;
+  gain: number;
+  voice: boolean;
 }

@@ -1,17 +1,12 @@
 <script setup lang="ts">
+const { userList } = useComponents();
+
 const headers: any[] = [
   {
     title: 'ゲーマータグ',
     align: 'start',
     sortable: true,
     key: 'gamerTag',
-    width: '30%'
-  },
-  {
-    title: 'ユーザーネーム',
-    align: 'start',
-    sortable: false,
-    key: 'userName',
     width: '30%'
   },
   {
@@ -23,41 +18,20 @@ const headers: any[] = [
   }
 ]
 
-const dataset = [
-  {
-    gamerTag: 'HiraG62',
-    userName: 'ひいらぎ'
-  },
-  {
-    gamerTag: 'badminton0717',
-    userName: 'けい'
-  }
-]
-
-const testData: Array<object> = [];
-
-const setTestData = () => {
-  for (let i = 0; i < 100; i++) {
-    testData.push(dataset[0]);
-    testData.push(dataset[1]);
-  }
-}
-
-setTestData();
-
-const sliderValues = ref<number[]>([]);
-
 onMounted(() => {
-  sliderValues.value = testData.map(() => 100);
 })
+
 </script>
 
 
 <template>
-  <v-data-table items-per-page="-1" :headers="headers" :items="dataset" :hide-default-footer="true"
-    :fixed-header="true" class="fill-height table">
-    <template v-slot:item.volume="{ index }">
-      <v-slider v-model="sliderValues[index]" :max="200" :min="0"></v-slider>
+  <v-data-table items-per-page="-1" :headers="headers" :items="userList" :hide-default-footer="true"
+    :fixed-header="true" no-data-text="他プレイヤーがいません。" class="fill-height table">
+    <template v-slot:item.gamerTag="{ item }">
+      <span><v-icon :color="item.voice ? 'green' : 'black'">mdi-volume-high</v-icon> {{ item.gamerTag }}</span>
+    </template>
+    <template v-slot:item.volume="{ item }">
+      <v-slider v-model="item.gain" :max="2" :min="0" :step="0.01"></v-slider>
     </template>
   </v-data-table>
 </template>

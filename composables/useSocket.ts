@@ -23,8 +23,9 @@ export async function useConnectSocket() {
   })
 }
 
-export async function useGetDataSocket() {
+export async function useGetDataSocket(num: Ref) {
   socket.on('playerData', (data) => {
-    console.log(data);
+    num.value += 0.01;
+    console.log(num);
   })
 }

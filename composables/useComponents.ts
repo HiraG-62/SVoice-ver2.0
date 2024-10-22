@@ -11,6 +11,7 @@ export function useComponents() {
 
   const isMicTest = ref<boolean>(false);
   const isSelfMute = useState<boolean>('isSelfMute', () => false);
+  const isNoiseSuppression = useState<boolean>('isNoiseSuppression', () => true);
   const isExtendsMic = ref<boolean>(false);
   const isJoining = useState<boolean>('isJoining', () => false)
 
@@ -31,12 +32,14 @@ export function useComponents() {
   const selectedInput = useState<AudioDevice | null>('selectedInput', () => null);
   const selectedOutput = useState<AudioDevice | null>('selectedOutput', () => null);
 
+  const microphone = useState<MediaStreamAudioSourceNode | null>('microphone', () => null);
   const media = useState<MediaStream | null>('media', () => null);
-  const micContext = useState<AudioContext | null>('micContext', () => null);
+  const audioContext = useState<AudioContext | null>('audioContext', () => null);
   const micNode = useState<GainNode | null>('micNode', () => null);
+  const noiseSupNode = useState<AudioWorkletNode | null>('noiseSupNode', () => null);
   const micDest = useState<MediaStreamAudioDestinationNode | null>('micDest', () => null);
 
-  const userList = useState<UserInfo[]>('userList', () => []);
+  const userList = useState<UserInfo[]>('userList', () => reactive([]));
 
   function sliderLevel(value: number, max: number) {
     if (value == 0) return 'grey'
@@ -57,6 +60,7 @@ export function useComponents() {
     micIndicatorMin,
     isMicTest,
     isSelfMute,
+    isNoiseSuppression,
     isExtendsMic,
     isJoining,
     phoneLevel,
@@ -71,9 +75,11 @@ export function useComponents() {
     audioOutputs,
     selectedInput,
     selectedOutput,
+    microphone,
     media,
-    micContext,
+    audioContext,
     micNode,
+    noiseSupNode,
     micDest,
     userList
   }

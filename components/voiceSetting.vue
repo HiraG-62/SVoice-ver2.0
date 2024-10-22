@@ -54,17 +54,17 @@ const clickExtendsMic = () => {
   }
 }
 
-const toggleMicTest = () => {
+const toggleMicTest = async () => {
   isMicTest.value = !isMicTest.value;
   if (isMicTest.value) {
-    startListening();
+    await startListening();
   } else {
     stopListening();
   }
 }
 
 watch(selectedInput, async () => {
-  await useChangeMicMedia();
+  await useChangeMicMedia(isMicTest.value);
 })
 
 </script>

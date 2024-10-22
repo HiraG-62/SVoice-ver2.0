@@ -3,8 +3,14 @@
 const {
   gamerTag,
   isSelfMute,
+  isNoiseSuppression,
   isJoining
 } = useComponents();
+
+const toggleNoiseSuppression = () => {
+  isNoiseSuppression.value = !isNoiseSuppression.value;
+  useNoiseSuppression();
+}
 
 const settingDialog = ref();
 
@@ -14,14 +20,12 @@ const openSetting = () => {
   }
 }
 
-const drawer = ref<boolean>(false);
-
 </script>
 
 <template>
   <v-container>
     <v-row justify="center" align-content="center" no-gutters>
-      <v-col cols="10">
+      <v-col cols="9">
         <v-toolbar-title>
           <v-icon size="x-large">mdi-account-circle</v-icon>
           {{ gamerTag }}
@@ -33,11 +37,26 @@ const drawer = ref<boolean>(false);
           {{ isJoining ? '参加中' : '待機中' }}
         </span>
       </v-col>
-      <v-col cols="2" class="d-flex justify-center align-center">
-        <v-icon size="x-large" @click="isSelfMute = !isSelfMute" :class="['mr-2']" :color="isSelfMute ? 'red' : ''">
-          {{ isSelfMute ? 'mdi-microphone-off' : 'mdi-microphone' }}
-        </v-icon>
-        <v-icon size="x-large" @click="openSetting" class="mr-2">mdi-cog</v-icon>
+      <v-col cols="3" class="d-flex justify-center align-center">
+        <v-tooltip :text="isSelfMute ? 'ミュート解除' : 'ミュート'" location="top">
+          <template #activator="{ props }">
+            <v-icon v-bind="props" size="x-large" @click="isSelfMute = !isSelfMute" :class="['mr-1']" :color="isSelfMute ? 'red' : ''">
+              {{ isSelfMute ? 'mdi-microphone-off' : 'mdi-microphone' }}
+            </v-icon>
+          </template>
+        </v-tooltip>
+        <v-tooltip :text="isNoiseSuppression ? 'ノイズ抑制解除' : 'ノイズ抑制'" location="top">
+          <template #activator="{ props }">
+            <v-icon v-bind="props" size="x-large" @click="toggleNoiseSuppression" :class="['mr-2']" :color="isNoiseSuppression ? 'green' : ''">
+              mdi-waveform
+            </v-icon>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="設定" location="top">
+          <template #activator="{ props }">
+            <v-icon v-bind="props" size="x-large" @click="openSetting" class="mr-2">mdi-cog</v-icon>
+          </template>
+        </v-tooltip>
         <setting-wrap ref="settingDialog"/>
       </v-col>
     </v-row>

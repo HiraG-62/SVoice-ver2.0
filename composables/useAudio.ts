@@ -1,21 +1,36 @@
-import type { RefSymbol } from "@vue/reactivity";
+import { NoiseSuppressorWorklet_Name } from "@timephy/rnnoise-wasm"
+import NoiseSuppressorWorklet from "@timephy/rnnoise-wasm/NoiseSuppressorWorklet?worker&url";
 
-const createMicNode = () => {
+let isListening = false;
+
+const createMicNode = async () => {
   const {
     micLevel,
+    microphone,
+    isNoiseSuppression,
     media,
-    micContext,
+    audioContext,
     micNode,
+    noiseSupNode,
     micDest
   } = useComponents();
 
-  const microphone = micContext.value!.createMediaStreamSource(media.value!);
-  micNode.value = micContext.value!.createGain();
-  micDest.value = micContext.value!.createMediaStreamDestination();
+  await audioContext.value!.audioWorklet.addModule(NoiseSuppressorWorklet);
+
+  microphone.value = audioContext.value!.createMediaStreamSource(media.value!);
+  micNode.value = audioContext.value!.createGain();
+  noiseSupNode.value = new AudioWorkletNode(audioContext.value!, NoiseSuppressorWorklet_Name);
+  micDest.value = audioContext.value!.createMediaStreamDestination();
+
 
   micNode.value.gain.value = micLevel.value / 50;
 
-  microphone.connect(micNode.value);
+  if(isNoiseSuppression.value) {
+    microphone.value.connect(noiseSupNode.value);
+    noiseSupNode.value.connect(micNode.value);
+  } else {
+    microphone.value.connect(micNode.value);
+  }
   micNode.value.connect(micDest.value);
 }
 
@@ -24,7 +39,7 @@ export async function useAudio() {
   const {
     micLevel,
     media,
-    micContext,
+    audioContext,
     micNode
   } = useComponents();
 
@@ -34,12 +49,12 @@ export async function useAudio() {
       video: false,
       audio: {
         echoCancellation: false,
-        noiseSuppression: true
+        noiseSuppression: true,
       }
     });
-    micContext.value = new AudioContext();
+    audioContext.value = new AudioContext();
 
-    createMicNode();
+    await createMicNode();
   } catch (err) {
     media.value = null;
     console.error('mic connection error: ', err);
@@ -52,6 +67,25 @@ export async function useAudio() {
   })
 }
 
+export function useNoiseSuppression() {
+  const {
+    isNoiseSuppression,
+    microphone,
+    micNode,
+    noiseSupNode
+  } = useComponents();
+
+  if(isNoiseSuppression.value) {
+    microphone.value!.disconnect(micNode.value!);
+    microphone.value!.connect(noiseSupNode.value!);
+    noiseSupNode.value!.connect(micNode.value!);
+  } else {
+    microphone.value!.disconnect(noiseSupNode.value!);
+    noiseSupNode.value!.disconnect(micNode.value!);
+    microphone.value!.connect(micNode.value!);
+  }
+}
+
 export function useMicIndicator() {
 
   const {
@@ -60,7 +94,7 @@ export function useMicIndicator() {
     isMicTest,
     selectedInput,
     media,
-    micContext,
+    audioContext,
     micNode
   } = useComponents();
 
@@ -75,9 +109,9 @@ export function useMicIndicator() {
       return;
     }
     try {
-      analyser = micContext.value!.createAnalyser();
+      analyser = audioContext.value!.createAnalyser();
       micNode.value?.connect(analyser);
-      micNode.value?.connect(micContext.value!.destination);
+      micNode.value?.connect(audioContext.value!.destination);
 
       analyser.fftSize = 256;
       const bufferLength = analyser.frequencyBinCount;
@@ -95,17 +129,17 @@ export function useMicIndicator() {
     } catch (err) {
       console.error('Error accessing microphone:', err);
     }
-  }
+  };
 
   const stopListening = () => {
     if (animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
-    if (micContext.value) {
+    if (audioContext.value) {
       analyser = null;
       try {
-        micNode.value?.disconnect(micContext.value.destination);
+        micNode.value?.disconnect(audioContext.value.destination);
       } catch { };
     }
     micIndicator.value = 0;
@@ -114,6 +148,19 @@ export function useMicIndicator() {
   watch(media, async (newMedia) => {
     if (analyser != null) {
       stopListening();
+
+      await new Promise<void>((resolve) => {
+        const checkListening = () => {
+          if (isListening) {
+            resolve();
+          } else {
+            // 少し待ってから再度チェック
+            setTimeout(checkListening, 100);
+          }
+        };
+        checkListening();
+      });
+
       await startListening();
     }
   });
@@ -166,15 +213,13 @@ export async function useAudioDevice() {
     .find(device => device.deviceId === 'default') as AudioDevice;
 }
 
-export async function useChangeMicMedia() {
+export async function useChangeMicMedia(isMicTest: boolean) {
   const {
-    micLevel,
     selectedInput,
-    media,
-    micContext,
-    micNode,
-    micDest
+    media
   } = useComponents();
+
+  const { startListening, stopListening } = useMicIndicator();
 
   const stopStream = () => {
     if (media.value) {
@@ -184,6 +229,7 @@ export async function useChangeMicMedia() {
   }
 
   try {
+    if(isMicTest) isListening = false;
     stopStream();
 
     const newMedia = await navigator.mediaDevices.getUserMedia({
@@ -197,7 +243,8 @@ export async function useChangeMicMedia() {
 
     media.value = newMedia;
 
-    createMicNode();
+    await createMicNode();
+    if(isMicTest) isListening = true;
   } catch (error) {
     console.error('Error changing microphone:', error);
   }
